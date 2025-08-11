@@ -1,0 +1,12 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/node:18",
+  "postCreateCommand": "npm install",
+  "postStartCommand": "npm run dev",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Timelock App",
+      "onAutoForward": "openPreview"
+    }
+  }
+}
