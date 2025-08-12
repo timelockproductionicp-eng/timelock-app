@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timelock App</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+      h1 { text-align: center; }
+      textarea { width: 100%; height: 100px; }
+      input[type="datetime-local"] { width: 100%; }
+      button { padding: 10px 20px; margin-top: 10px; }
+      .message { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Timelock App</h1>
+    <form id="messageForm">
+        <label for="message">Message:</label><br>
+        <textarea id="message" required></textarea><br>
+        <label for="releaseTime">Release Time:</label><br>
+        <input type="datetime-local" id="releaseTime" required><br>
+        <button type="submit">Schedule Message</button>
+    </form>
+
+    <h2>Scheduled Messages</h2>
+    <div id="messages"></div>
+
+    <script>
+    function getScheduledMessages() {
+        const messages = localStorage.getItem('scheduledMessages');
+        return messages ? JSON.parse(messages) : [];
+    }
+
+    function saveScheduledMessages(messages) {
+        localStorage.setItem('scheduledMessages', JSON.stringify(messages));
+    }
+
+    function renderMessages() {
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+        const now = new Date();
+        const messages = getScheduledMessages();
+        messages.forEach((msg, index) => {
+            const releaseDate = new Date(msg.releaseTime);
+            const div = document.createElement('div');
+            div.className = 'message';
+            if (now >= releaseDate) {
+                div.textContent = msg.message;
+            } else {
+                div.textContent = `\uD83D\uDD12 Message locked until ${releaseDate.toLocaleString()}`;
+            }
+            messagesDiv.appendChild(div);
+        });
+    }
+
+    document.getElementById('messageForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = document.getElementById('message').value.trim();
+        const releaseTime = document.getElementById('releaseTime').value;
+        if (!message || !releaseTime) return;
+        const messages = getScheduledMessages();
+        messages.push({ message, releaseTime });
+        saveScheduledMessages(messages);
+        document.getElementById('message').value = '';
+        document.getElementById('releaseTime').value = '';
+        renderMessages();
+    });
+
+    // Render on load and update every minute
+    renderMessages();
+    setInterval(renderMessages, 60000);
+    </script>
+</body>
+</html>
