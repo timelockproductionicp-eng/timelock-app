@@ -1,9 +1,9 @@
 {
-  "version": 1,
   "canisters": {
     "timelock_app": {
       "type": "assets",
       "source": "public"
     }
-  }
+  },
+  "version": 1
 }
