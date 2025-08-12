@@ -1,75 +1,507 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timelock App</title>
-    <style>
-      body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
-      h1 { text-align: center; }
-      textarea { width: 100%; height: 100px; }
-      input[type="datetime-local"] { width: 100%; }
-      button { padding: 10px 20px; margin-top: 10px; }
-      .message { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timelock Vault</title>
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at center, #0f172a 0%, #0a0f24 100%);
+  color: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+header, section {
+  padding: 20px;
+}
+.hidden {
+  display: none;
+}
+button {
+  padding: 10px 16px;
+  margin: 5px;
+  background: linear-gradient(90deg, #b236ff, #5b74ff);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover {
+  opacity: 0.9;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+}
+.card {
+  flex: 1 1 calc(33.33% - 20px);
+  background: #1d2544;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  cursor: pointer;
+}
+.card.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.vault-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.vault-item {
+  width: calc(50% - 20px);
+  background: #1a2040;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+}
+.timer {
+  font-size: 0.8em;
+  color: #7aa2ff;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal-content {
+  background: #141c3a;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+}
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+}
+.close {
+  float: right;
+  cursor: pointer;
+  color: #fff;
+}
+</style>
 </head>
 <body>
-    <h1>Timelock App</h1>
-    <form id="messageForm">
-        <label for="message">Message:</label><br>
-        <textarea id="message" required></textarea><br>
-        <label for="releaseTime">Release Time:</label><br>
-        <input type="datetime-local" id="releaseTime" required><br>
-        <button type="submit">Schedule Message</button>
-    </form>
+<div class="container">
 
-    <h2>Scheduled Messages</h2>
-    <div id="messages"></div>
+<section id="homeSection">
+  <h1>Timelock Vault</h1>
+  <p>Securely encrypt your secrets and lock them until a future time.</p>
+  <button id="getStartedBtn">Get Started</button>
+  <button id="signInBtn">Sign In</button>
+</section>
 
-    <script>
-    function getScheduledMessages() {
-        const messages = localStorage.getItem('scheduledMessages');
-        return messages ? JSON.parse(messages) : [];
-    }
+<section id="signupSection" class="hidden">
+  <h2>Create Account</h2>
+  <input type="password" id="signupPassword" placeholder="Enter a password" required>
+  <button id="signupBtn">Create Account</button>
+  <p>Already have an account? <a href="#" id="gotoSignin">Sign in here</a></p>
+</section>
 
-    function saveScheduledMessages(messages) {
-        localStorage.setItem('scheduledMessages', JSON.stringify(messages));
-    }
+<section id="signinSection" class="hidden">
+  <h2>Sign In</h2>
+  <input type="password" id="signinPassword" placeholder="Enter your password" required>
+  <button id="signinBtn">Sign In</button>
+  <p>Don't have an account? <a href="#" id="gotoSignup">Create one here</a></p>
+</section>
 
-    function renderMessages() {
-        const messagesDiv = document.getElementById('messages');
-        messagesDiv.innerHTML = '';
-        const now = new Date();
-        const messages = getScheduledMessages();
-        messages.forEach((msg, index) => {
-            const releaseDate = new Date(msg.releaseTime);
-            const div = document.createElement('div');
-            div.className = 'message';
-            if (now >= releaseDate) {
-                div.textContent = msg.message;
-            } else {
-                div.textContent = `\uD83D\uDD12 Message locked until ${releaseDate.toLocaleString()}`;
-            }
-            messagesDiv.appendChild(div);
-        });
-    }
+<section id="vaultSection" class="hidden">
+  <h2>Vault Operations</h2>
+  <div class="card-grid">
+    <div class="card" id="addMessageCard">Add encrypted message</div>
+    <div class="card" id="addFileCard">Add encrypted file</div>
+    <div class="card disabled">Lock crypto assets</div>
+  </div>
+  <div style="margin-top:20px;">
+    <button id="unlockBtn">Unlock existing vault</button>
+    <button id="logoutBtn">Logout</button>
+  </div>
+  <h2 style="margin-top:30px;">Vault Contents</h2>
+  <div id="vaultContents" class="vault-grid">
+    <!-- Items will be inserted here -->
+  </div>
+</section>
 
-    document.getElementById('messageForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const message = document.getElementById('message').value.trim();
-        const releaseTime = document.getElementById('releaseTime').value;
-        if (!message || !releaseTime) return;
-        const messages = getScheduledMessages();
-        messages.push({ message, releaseTime });
-        saveScheduledMessages(messages);
-        document.getElementById('message').value = '';
-        document.getElementById('releaseTime').value = '';
-        renderMessages();
+</div>
+
+<!-- Encrypt Modal -->
+<div id="encryptModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" id="closeEncrypt">&times;</span>
+    <h3 id="encryptTitle">Encrypt Data</h3>
+    <input type="file" id="fileInput" accept="*/*" style="display:none;">
+    <textarea id="messageInput" rows="3" placeholder="Enter your secret message"></textarea>
+    <input type="password" id="encPassword" placeholder="Encryption password" required>
+    <label>Lock duration:</label>
+    <input type="number" id="durationValue" min="1" value="1">
+    <select id="durationUnit">
+      <option value="minutes">Minutes</option>
+      <option value="hours">Hours</option>
+      <option value="days">Days</option>
+    </select>
+    <button id="encryptBtn">Encrypt & Lock</button>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" id="closeSuccess">&times;</span>
+    <h3>Vault Created</h3>
+    <p id="vaultInfo"></p>
+    <button id="successOkBtn">Return to Vault</button>
+  </div>
+</div>
+
+<!-- Decrypt Modal -->
+<div id="decryptModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" id="closeDecrypt">&times;</span>
+    <h3>Unlock Vault</h3>
+    <input type="text" id="decryptId" placeholder="Vault ID">
+    <input type="password" id="decryptPassword" placeholder="Password">
+    <button id="decryptBtn">Decrypt</button>
+    <div id="decryptResult" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<script>
+// State variables
+let currentUser = null;
+
+// Element references
+const homeSection = document.getElementById('homeSection');
+const signupSection = document.getElementById('signupSection');
+const signinSection = document.getElementById('signinSection');
+const vaultSection = document.getElementById('vaultSection');
+const getStartedBtn = document.getElementById('getStartedBtn');
+const signInBtn = document.getElementById('signInBtn');
+const signupBtn = document.getElementById('signupBtn');
+const signupPassword = document.getElementById('signupPassword');
+const signinBtn = document.getElementById('signinBtn');
+const signinPassword = document.getElementById('signinPassword');
+const gotoSignup = document.getElementById('gotoSignup');
+const gotoSignin = document.getElementById('gotoSignin');
+const logoutBtn = document.getElementById('logoutBtn');
+const addMessageCard = document.getElementById('addMessageCard');
+const addFileCard = document.getElementById('addFileCard');
+const unlockBtn = document.getElementById('unlockBtn');
+const vaultContents = document.getElementById('vaultContents');
+const encryptModal = document.getElementById('encryptModal');
+const encryptTitle = document.getElementById('encryptTitle');
+const fileInput = document.getElementById('fileInput');
+const messageInput = document.getElementById('messageInput');
+const encPassword = document.getElementById('encPassword');
+const durationValue = document.getElementById('durationValue');
+const durationUnit = document.getElementById('durationUnit');
+const encryptBtn = document.getElementById('encryptBtn');
+const closeEncrypt = document.getElementById('closeEncrypt');
+const successModal = document.getElementById('successModal');
+const vaultInfo = document.getElementById('vaultInfo');
+const successOkBtn = document.getElementById('successOkBtn');
+const closeSuccess = document.getElementById('closeSuccess');
+const decryptModal = document.getElementById('decryptModal');
+const decryptId = document.getElementById('decryptId');
+const decryptPassword = document.getElementById('decryptPassword');
+const decryptBtn = document.getElementById('decryptBtn');
+const decryptResult = document.getElementById('decryptResult');
+const closeDecrypt = document.getElementById('closeDecrypt');
+
+// Event bindings
+getStartedBtn.onclick = () => showSection('signupSection');
+signInBtn.onclick = () => showSection('signinSection');
+gotoSignup.onclick = (e) => { e.preventDefault(); showSection('signupSection'); };
+gotoSignin.onclick = (e) => { e.preventDefault(); showSection('signinSection'); };
+signupBtn.onclick = createAccount;
+signinBtn.onclick = signIn;
+logoutBtn.onclick = logout;
+addMessageCard.onclick = () => openEncryptModal('message');
+addFileCard.onclick = () => openEncryptModal('file');
+unlockBtn.onclick = () => { decryptId.value = ''; decryptPassword.value = ''; decryptResult.innerHTML=''; showModal(decryptModal); };
+closeEncrypt.onclick = () => closeModal(encryptModal);
+closeSuccess.onclick = () => closeModal(successModal);
+successOkBtn.onclick = () => { closeModal(successModal); showSection('vaultSection'); renderVaultContents(); };
+closeDecrypt.onclick = () => closeModal(decryptModal);
+encryptBtn.onclick = encryptAndStore;
+decryptBtn.onclick = decryptVault;
+
+// Show section function
+function showSection(sectionName) {
+  homeSection.classList.add('hidden');
+  signupSection.classList.add('hidden');
+  signinSection.classList.add('hidden');
+  vaultSection.classList.add('hidden');
+  if (sectionName === 'signupSection') signupSection.classList.remove('hidden');
+  if (sectionName === 'signinSection') signinSection.classList.remove('hidden');
+  if (sectionName === 'vaultSection') {
+    vaultSection.classList.remove('hidden');
+    renderVaultContents();
+  }
+  if (sectionName === 'homeSection') homeSection.classList.remove('hidden');
+}
+
+// Account creation
+function createAccount() {
+  const pass = signupPassword.value.trim();
+  if (!pass) { alert('Please enter a password'); return; }
+  localStorage.setItem('vaultPassword', pass);
+  currentUser = pass;
+  signupPassword.value = '';
+  showSection('vaultSection');
+}
+
+// Sign in
+function signIn() {
+  const stored = localStorage.getItem('vaultPassword');
+  if (!stored) { alert('No account exists. Please sign up.'); return; }
+  if (signinPassword.value.trim() !== stored) { alert('Incorrect password'); return; }
+  currentUser = stored;
+  signinPassword.value = '';
+  showSection('vaultSection');
+}
+
+// Logout
+function logout() {
+  currentUser = null;
+  showSection('homeSection');
+}
+
+// Open encryption modal
+function openEncryptModal(type) {
+  encryptTitle.textContent = type === 'file' ? 'Encrypt File' : 'Encrypt Message';
+  if (type === 'file') {
+    fileInput.style.display = 'block';
+    messageInput.style.display = 'none';
+  } else {
+    fileInput.style.display = 'none';
+    messageInput.style.display = 'block';
+  }
+  fileInput.value = '';
+  messageInput.value = '';
+  encPassword.value = '';
+  durationValue.value = 1;
+  durationUnit.value = 'minutes';
+  encryptBtn.dataset.type = type;
+  showModal(encryptModal);
+}
+
+// Modal show/hide
+function showModal(modal) {
+  modal.classList.remove('hidden');
+}
+function closeModal(modal) {
+  modal.classList.add('hidden');
+}
+
+// Generate random ID
+function generateId() {
+  return Math.random().toString(36).substring(2, 10);
+}
+
+// Convert units to milliseconds
+function unitToMs(value, unit) {
+  const v = parseInt(value);
+  if (unit === 'minutes') return v * 60 * 1000;
+  if (unit === 'hours') return v * 60 * 60 * 1000;
+  if (unit === 'days') return v * 24 * 60 * 60 * 1000;
+  return 0;
+}
+
+// Encryption using Web Crypto API
+async function encryptData(data, password) {
+  const enc = new TextEncoder();
+  const salt = window.crypto.getRandomValues(new Uint8Array(16));
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const keyMaterial = await window.crypto.subtle.importKey(
+    'raw', enc.encode(password), {name: 'PBKDF2'}, false, ['deriveKey']
+  );
+  const key = await window.crypto.subtle.deriveKey(
+    {name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256'},
+    keyMaterial,
+    {name: 'AES-GCM', length: 256},
+    false,
+    ['encrypt','decrypt']
+  );
+  const cipherBuffer = await window.crypto.subtle.encrypt(
+    {name:'AES-GCM', iv: iv},
+    key,
+    enc.encode(data)
+  );
+  return {
+    cipher: btoa(String.fromCharCode(...new Uint8Array(cipherBuffer))),
+    iv: Array.from(iv),
+    salt: Array.from(salt)
+  };
+}
+
+// Decryption using Web Crypto API
+async function decryptData(cipher, ivArr, saltArr, password) {
+  const enc = new TextEncoder();
+  const iv = new Uint8Array(ivArr);
+  const salt = new Uint8Array(saltArr);
+  const keyMaterial = await window.crypto.subtle.importKey(
+    'raw', enc.encode(password), {name:'PBKDF2'}, false, ['deriveKey']
+  );
+  const key = await window.crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt: salt, iterations:100000, hash:'SHA-256'},
+    keyMaterial,
+    {name:'AES-GCM', length:256},
+    false,
+    ['decrypt']
+  );
+  const cipherBytes = Uint8Array.from(atob(cipher), c => c.charCodeAt(0));
+  try {
+    const plainBuffer = await window.crypto.subtle.decrypt(
+      {name:'AES-GCM', iv: iv},
+      key,
+      cipherBytes
+    );
+    return new TextDecoder().decode(plainBuffer);
+  } catch (err) {
+    return null;
+  }
+}
+
+// Encrypt and store
+async function encryptAndStore() {
+  const type = encryptBtn.dataset.type;
+  const password = encPassword.value.trim();
+  if (!password) { alert('Enter a password'); return; }
+  let data, fileName, isFile=false;
+  if (type === 'file') {
+    if (!fileInput.files || fileInput.files.length === 0) { alert('Select a file'); return; }
+    const file = fileInput.files[0];
+    fileName = file.name;
+    isFile = true;
+    data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
+  } else {
+    data = messageInput.value.trim();
+    if (!data) { alert('Enter a message'); return; }
+  }
+  const encrypted = await encryptData(data, password);
+  const durationMs = unitToMs(durationValue.value, durationUnit.value);
+  const expiry = Date.now() + durationMs;
+  const id = generateId();
+  const vaultItem = {
+    id,
+    type: type,
+    fileName: fileName || null,
+    cipher: encrypted.cipher,
+    iv: encrypted.iv,
+    salt: encrypted.salt,
+    expiry: expiry
+  };
+  localStorage.setItem('vault-' + id, JSON.stringify(vaultItem));
+  closeModal(encryptModal);
+  vaultInfo.innerHTML = 'Vault ID: <code>' + id + '</code><br>Unlock at: ' + new Date(expiry).toLocaleString();
+  showModal(successModal);
+}
 
-    // Render on load and update every minute
-    renderMessages();
-    setInterval(renderMessages, 60000);
-    </script>
+// Render vault contents
+function renderVaultContents() {
+  vaultContents.innerHTML = '';
+  const now = Date.now();
+  Object.keys(localStorage).forEach(key => {
+    if (!key.startsWith('vault-') || key.endsWith('-plaintext')) return;
+    const item = JSON.parse(localStorage.getItem(key));
+    const locked = now < item.expiry;
+    const div = document.createElement('div');
+    div.className = 'vault-item';
+    let title = item.type === 'file' ? (item.fileName || 'File') : 'Message';
+    div.innerHTML = '<strong>' + title + '</strong><br>';
+    if (locked) {
+      div.innerHTML += '<span class="timer" id="timer-' + item.id + '"></span><br>';
+      const unlockBtn2 = document.createElement('button');
+      unlockBtn2.textContent = 'Unlock';
+      unlockBtn2.onclick = () => {
+        decryptId.value = item.id;
+        decryptPassword.value = '';
+        decryptResult.innerHTML = '';
+        showModal(decryptModal);
+      };
+      div.appendChild(unlockBtn2);
+    } else {
+      if (item.type === 'file') {
+        const link = document.createElement('a');
+        link.textContent = 'Download';
+        link.href = localStorage.getItem('vault-' + item.id + '-plaintext') || '#';
+        link.download = item.fileName || 'download';
+        link.style.display = 'block';
+        div.appendChild(link);
+      } else {
+        const para = document.createElement('p');
+        para.textContent = localStorage.getItem('vault-' + item.id + '-plaintext') || 'Unlocked';
+        div.appendChild(para);
+      }
+    }
+    vaultContents.appendChild(div);
+  });
+}
+
+// Update timers every second
+setInterval(() => {
+  const now = Date.now();
+  Object.keys(localStorage).forEach(key => {
+    if (!key.startsWith('vault-') || key.endsWith('-plaintext')) return;
+    const item = JSON.parse(localStorage.getItem(key));
+    const timerEl = document.getElementById('timer-' + item.id);
+    if (timerEl) {
+      const diff = item.expiry - now;
+      if (diff > 0) {
+        const mins = Math.floor(diff/60000);
+        const secs = Math.floor((diff%60000)/1000);
+        timerEl.textContent = 'Locked: ' + mins + 'm ' + secs + 's remaining';
+      } else {
+        timerEl.textContent = 'Unlocked';
+      }
+    }
+  });
+}, 1000);
+
+// Decrypt vault
+async function decryptVault() {
+  const id = decryptId.value.trim();
+  const password = decryptPassword.value.trim();
+  if (!id || !password) { alert('Please fill id and password'); return; }
+  const key = 'vault-' + id;
+  const itemStr = localStorage.getItem(key);
+  if (!itemStr) { alert('Vault not found'); return; }
+  const item = JSON.parse(itemStr);
+  if (Date.now() < item.expiry) { alert('Vault is still locked'); return; }
+  const plaintext = await decryptData(item.cipher, item.iv, item.salt, password);
+  if (plaintext === null) { alert('Wrong password'); return; }
+  // store plaintext for display/download
+  localStorage.setItem(key + '-plaintext', plaintext);
+  decryptResult.textContent = 'Decrypted: ' + (item.type === 'file' ? 'File ready for download' : plaintext);
+  renderVaultContents();
+}
+
+</script>
 </body>
 </html>
