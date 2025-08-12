@@ -1,0 +1,8 @@
+{
+  "canisters": {
+    "timelock_app": {
+      "type": "assets",
+      "source": "public"
+    }
+  }
+}
