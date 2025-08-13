@@ -1,426 +1,379 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Timelock Vault</title>
   <style>
-    /* Base styles and dark grid background */
+    /* Reset and base styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      color: #f3f3f3;
-      /* black background with subtle grid */
-      background-color: #010409;
-      background-image: linear-gradient(#0a0f17 1px, transparent 1px), linear-gradient(90deg, #0a0f17 1px, transparent 1px);
-      background-size: 32px 32px;
-      overflow-y: auto;
+      font-family: 'Arial', sans-serif;
+      background-color: #05080e;
+      background-image:
+        linear-gradient(0deg, rgba(255,255,255,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
+      background-size: 40px 40px;
+      color: #f5f5f5;
+      overflow-x: hidden;
     }
-    h1, h2, h3 {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-      font-weight: 700;
+    h1,h2,h3 {
       text-align: center;
-      /* neon gradient for headings */
-      background: linear-gradient(90deg, #a855f7, #0ea5e9, #ec4899);
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg,#00b7ff,#c35bff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    a {
-      color: #38bdf8;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    .page {
-      display: none;
-      padding: 2rem 1rem;
-      max-width: 900px;
+    .container {
+      width: 90%;
+      max-width: 1200px;
       margin: 0 auto;
+      padding: 2rem 0;
     }
-    .active {
+    /* Buttons */
+    .btn {
       display: block;
-    }
-    /* Hero section styles */
-    .hero {
-      padding: 5rem 1rem;
+      width: 100%;
       text-align: center;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1rem;
+      border: none;
     }
-    .features {
+    .btn-primary {
+      background: linear-gradient(90deg,#9b5cff,#37c7ff);
+      color: #fff;
+    }
+    .btn-secondary {
+      background-color: transparent;
+      border: 2px solid #9b5cff;
+      color: #9b5cff;
+    }
+    .btn-danger {
+      background-color: transparent;
+      border: 2px solid #ff4444;
+      color: #ff4444;
+    }
+    /* Card styles */
+    .card-grid {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 1.5rem;
-      margin: 2rem 0;
-    }
-    .feature-card {
-      background: rgba(12, 18, 28, 0.8);
-      border: 1px solid #1f2937;
-      border-radius: 0.5rem;
-      padding: 1.5rem;
-      width: 250px;
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
-      text-align: center;
-    }
-    .feature-card h3 {
-      margin-bottom: 0.5rem;
-      font-size: 1.25rem;
-    }
-    .buttons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-    button.primary {
-      background: linear-gradient(90deg, #a855f7, #0ea5e9);
-      border: none;
-      color: #fff;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-    button.primary:hover {
-      transform: translateY(-2px);
-    }
-    button.secondary {
-      background: transparent;
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-    button.secondary:hover {
-      transform: translateY(-2px);
-    }
-    /* Auth pages */
-    .auth-options {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-    .auth-options button {
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      border: none;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .auth-options button.google {
-      background: #ea4335;
-      color: #fff;
-    }
-    .auth-options button.yubi {
-      background: #f59e0b;
-      color: #fff;
-    }
-    .auth-options button.ii {
-      background: #059669;
-      color: #fff;
-    }
-    .form-control {
-      width: 100%;
-      padding: 0.5rem;
-      margin-bottom: 1rem;
-      border-radius: 0.4rem;
-      border: 1px solid #334155;
-      background: #0f172a;
-      color: #f3f3f3;
-    }
-    .form-control::placeholder {
-      color: #64748b;
-    }
-    .auth-action {
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 0.4rem;
-      background: linear-gradient(90deg, #a855f7, #0ea5e9);
-      border: none;
-      color: #fff;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    /* Vault page cards */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin: 2rem 0;
     }
     .card {
-      background: rgba(12, 18, 28, 0.8);
-      border: 1px solid #1f2937;
-      border-radius: 0.5rem;
-      padding: 1rem;
+      background: rgba(15,22,42,0.8);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 280px;
       text-align: center;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
-    }
-    .card.disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    /* Vault contents grid */
-    .vault-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-    .vault-item {
-      background: rgba(12, 18, 28, 0.8);
-      border: 1px solid #1f2937;
-      border-radius: 0.5rem;
-      padding: 0.75rem;
       position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
     }
-    .vault-item .name {
-      font-weight: bold;
-      margin-bottom: 0.25rem;
-    }
-    .vault-item .status {
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-    }
-    .vault-item button {
-      padding: 0.3rem 0.6rem;
-      border: none;
-      border-radius: 0.3rem;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    .vault-item button.view {
-      background: #0ea5e9;
-      color: #fff;
-    }
-    .vault-item button.locked {
-      background: #334155;
-      color: #94a3b8;
-      cursor: not-allowed;
-    }
-    /* Modals */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      display: none;
+    .card .icon-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      margin: 0 auto 1rem;
+      font-size: 1.8rem;
+      color: #fff;
     }
-    .modal-content {
-      background: #0f172a;
-      padding: 1.5rem;
-      border-radius: 0.5rem;
-      max-width: 500px;
-      width: 90%;
-      border: 1px solid #1f2937;
-      box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
-    }
-    .modal-content h3 {
-      margin-top: 0;
-      text-align: center;
-    }
-    .modal-content input, .modal-content textarea, .modal-content select {
-      width: 100%;
-      padding: 0.5rem;
-      margin-bottom: 0.8rem;
-      border-radius: 0.4rem;
-      border: 1px solid #334155;
-      background: #0a1420;
-      color: #f3f3f3;
-    }
-    .modal-content button {
+    /* Colors for icons */
+    .icon-purple { background: linear-gradient(90deg,#9345ff,#6922aa); }
+    .icon-cyan { background: linear-gradient(90deg,#00c1ff,#00ffc6); }
+    .icon-orange { background: linear-gradient(90deg,#ff9b00,#ff4d4d); }
+    .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom:0.5rem; text-transform: uppercase; }
+    .card-desc { font-size: 0.8rem; color: #aaa; margin-bottom: 1rem; }
+    .card.disabled { opacity: 0.4; pointer-events:none; }
+    /* Section hidden */
+    .section { display: none; }
+    .section.active { display: block; }
+    /* Form inputs */
+    input, textarea, select {
       width: 100%;
       padding: 0.6rem;
+      border: 2px solid #444;
+      background-color: rgba(20,27,46,0.9);
+      color: #fff;
+      border-radius: 8px;
       margin-top: 0.5rem;
-      border-radius: 0.4rem;
-      border: none;
-      font-size: 1rem;
-      cursor: pointer;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
     }
-    .encrypt-btn {
-      background: linear-gradient(90deg, #a855f7, #0ea5e9);
-      color: #fff;
+    textarea { min-height: 100px; }
+    select { background-color: rgba(20,27,46,0.9); }
+    label { font-size: 0.85rem; color: #87a6c9; display:block; margin-top: 0.5rem;}
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background: rgba(0,0,0,0.8);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:100;
     }
-    .cancel-btn {
-      background: #334155;
-      color: #94a3b8;
+    .modal-overlay.active { display:flex; }
+    .modal {
+      background: rgba(15,22,42,0.95);
+      border: 2px solid #4f5bd7;
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 500px;
+      color:#fff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      position:relative;
     }
-    .success-btn {
-      background: #10b981;
-      color: #fff;
+    .modal h3 { margin-top:0; margin-bottom:1rem; text-align:center; }
+    .close-btn {
+      position:absolute;
+      top:0.5rem;
+      right:0.5rem;
+      cursor:pointer;
+      font-size:1.2rem;
+      color:#ccc;
     }
-    @media (max-width: 500px) {
-      .features {
-        flex-direction: column;
-      }
-      .cards {
-        grid-template-columns: 1fr;
-      }
-      .vault-grid {
-        grid-template-columns: 1fr;
-      }
+    /* Vault contents grid */
+    .vault-contents {
+      margin-top:2rem;
+    }
+    .vault-items {
+      display:flex;
+      flex-wrap: wrap;
+      gap:1rem;
+      justify-content:flex-start;
+    }
+    .vault-item {
+      flex:1 1 250px;
+      border:1px solid #4a4a6a;
+      background: rgba(20,27,46,0.9);
+      border-radius:8px;
+      padding:1rem;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+    }
+    .vault-item.locked {
+      opacity:0.6;
+    }
+    .vault-item .timer {
+      font-size:0.8rem;
+      color:#ffcc00;
+    }
+    .vault-item button {
+      margin-top:auto;
+    }
+    .small { font-size:0.75rem; color:#777; }
+    /* Link style */
+    .link { color:#37c7ff; cursor:pointer; text-decoration:underline; }
+    .system-status {
+      display:inline-flex;
+      align-items:center;
+      background:rgba(56,150,216,0.1);
+      padding:0.3rem 0.6rem;
+      border-radius:20px;
+      font-size:0.75rem;
+      color:#00ffbb;
+      margin-bottom:1rem;
     }
   </style>
 </head>
 <body>
   <!-- Home page -->
-  <div id="homePage" class="page active">
-    <div class="hero">
-      <h1>Timelock Vault</h1>
-      <p>Secure your digital assets with quantum‑resistant encryption</p>
-      <p style="font-size:0.9rem; opacity:0.8;">Client‑side encryption • Time‑locked security • Zero‑knowledge architecture</p>
-      <div class="features">
-        <div class="feature-card">
-          <h3>AES‑GCM Encryption</h3>
-          <p>Military‑grade encryption happens entirely in your browser.</p>
+  <section id="homePage" class="section active">
+    <div class="container">
+      <h1 class="gradient-text" style="font-size:2.5rem;">TimeLock Vault</h1>
+      <p style="text-align:center; margin-bottom:1rem;">Secure your digital assets with quantum‑resistant encryption</p>
+      <p style="text-align:center; margin-bottom:2rem; font-size:0.8rem;">Client‑side encryption · Time‑locked security · Zero‑knowledge architecture</p>
+      <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;">
+        <button class="btn btn-primary" style="max-width:200px;" onclick="showSection('signupPage')">Get Started</button>
+        <button class="btn btn-secondary" style="max-width:200px;" onclick="showSection('signinPage')">Already have account</button>
+      </div>
+      <div class="card-grid" style="margin-top:3rem;">
+        <div class="card">
+          <div class="icon-circle icon-purple">🔒</div>
+          <div class="card-title">AES‑GCM Encryption</div>
+          <div class="card-desc">Military‑grade encryption happens entirely in your browser</div>
         </div>
-        <div class="feature-card">
-          <h3>Time‑Locked Access</h3>
-          <p>Data remains encrypted until your specified unlock time.</p>
+        <div class="card">
+          <div class="icon-circle icon-cyan">⏰</div>
+          <div class="card-title">Time‑Locked Access</div>
+          <div class="card-desc">Data remains encrypted until your specified unlock time</div>
         </div>
-        <div class="feature-card">
-          <h3>Zero‑Knowledge</h3>
-          <p>Server never sees your passwords or plaintext data.</p>
+        <div class="card">
+          <div class="icon-circle icon-orange">⚡️</div>
+          <div class="card-title">Zero Knowledge</div>
+          <div class="card-desc">Server never sees your passwords or plaintext data</div>
         </div>
       </div>
-      <div class="buttons">
-        <button class="primary" onclick="showPage('signupPage')">Get Started</button>
-        <button class="secondary" onclick="showPage('signinPage')">Already have account</button>
+      <div style="margin-top:2rem; text-align:center; font-size:0.75rem;">
+        <span style="color:#ffa800;">⚡ Quantum‑resistant security protocols ⚡</span>
       </div>
     </div>
-    <div style="max-width:700px; margin:2rem auto; border:1px solid #334155; padding:1rem; border-radius:0.5rem; background:#0a1420;">
-      <h3>Security Guarantee</h3>
-      <p>Your data is encrypted with AES‑GCM using PBKDF2 key derivation (100,000 iterations) entirely within your browser. The server only stores encrypted data and never has access to your passwords or plaintext content. Time‑locked vaults cannot be unlocked before the specified time, even with correct credentials.</p>
+  </section>
+  <!-- Sign Up page -->
+  <section id="signupPage" class="section">
+    <div class="container" style="max-width:500px;">
+      <div class="link" onclick="showSection('homePage')" style="margin-bottom:1rem;">← Back to Home</div>
+      <h2 class="gradient-text">Create Account</h2>
+      <p style="text-align:center; font-size:0.7rem; margin-bottom:1rem;">Secure · Encrypted · Time‑locked</p>
+      <button class="btn btn-secondary" onclick="alert('Google signup not available yet');">Sign up with Google</button>
+      <button class="btn btn-secondary" onclick="alert('Yubikey signup not available yet');">Yubikey Authentication</button>
+      <button class="btn btn-secondary" onclick="alert('Internet Identity signup not available yet');">Internet Identity</button>
+      <label for="signupUsername">Username</label>
+      <input id="signupUsername" type="text" placeholder="Choose a username" />
+      <label for="signupPassword">Create Password</label>
+      <input id="signupPassword" type="password" placeholder="Create a strong password" />
+      <button class="btn btn-primary" onclick="createAccount()">Create Account</button>
+      <p style="margin-top:1rem; font-size:0.8rem; text-align:center;">Already have an account? <span class="link" onclick="showSection('signinPage')">Sign in here</span></p>
     </div>
-  </div>
-  <!-- Sign up page -->
-  <div id="signupPage" class="page">
-    <h2>Create Account</h2>
-    <div class="auth-options">
-      <button class="google" id="googleSignup">Sign up with Google</button>
-      <button class="yubi" id="yubiSignup">Sign up with Yubikey</button>
-      <button class="ii" id="iiSignup">Sign up with Internet Identity</button>
+  </section>
+  <!-- Sign In page -->
+  <section id="signinPage" class="section">
+    <div class="container" style="max-width:500px;">
+      <div class="link" onclick="showSection('homePage')" style="margin-bottom:1rem;">← Back to Home</div>
+      <h2 class="gradient-text">Sign In</h2>
+      <p style="text-align:center; font-size:0.7rem; margin-bottom:1rem;">Secure · Encrypted · Time‑locked</p>
+      <button class="btn btn-secondary" onclick="alert('Google authentication not available yet');">Authenticate with Google</button>
+      <button class="btn btn-secondary" onclick="alert('Yubikey authentication not available yet');">Yubikey Authentication</button>
+      <button class="btn btn-secondary" onclick="alert('Internet Identity authentication not available yet');">Internet Identity</button>
+      <label for="signinUsername">Username</label>
+      <input id="signinUsername" type="text" placeholder="Your username" />
+      <label for="signinPassword">Password Authentication</label>
+      <input id="signinPassword" type="password" placeholder="Enter secure password" />
+      <button class="btn btn-primary" onclick="signIn()">Initiate Access</button>
+      <p style="margin-top:1rem; font-size:0.8rem; text-align:center;">Don't have an account? <span class="link" onclick="showSection('signupPage')">Create account</span></p>
     </div>
-    <div style="text-align:center; margin:0.5rem 0; opacity:0.6;">— OR —</div>
-    <input type="text" id="signupUsername" class="form-control" placeholder="Username">
-    <input type="password" id="signupPassword" class="form-control" placeholder="Encryption password">
-    <button id="createAccount" class="auth-action">Create Account</button>
-    <p style="text-align:center; margin-top:1rem;">Already have an account? <a href="#" onclick="showPage('signinPage')">Sign in here</a></p>
-  </div>
-  <!-- Sign in page -->
-  <div id="signinPage" class="page">
-    <h2>Sign In</h2>
-    <div class="auth-options">
-      <button class="google" id="googleSignin">Sign in with Google</button>
-      <button class="yubi" id="yubiSignin">Sign in with Yubikey</button>
-      <button class="ii" id="iiSignin">Sign in with Internet Identity</button>
-    </div>
-    <div style="text-align:center; margin:0.5rem 0; opacity:0.6;">— OR —</div>
-    <input type="text" id="signinUsername" class="form-control" placeholder="Username">
-    <input type="password" id="signinPassword" class="form-control" placeholder="Encryption password">
-    <button id="login" class="auth-action">Sign In</button>
-    <p style="text-align:center; margin-top:1rem;">Don't have an account? <a href="#" onclick="showPage('signupPage')">Create one</a></p>
-  </div>
+  </section>
   <!-- Vault operations page -->
-  <div id="vaultPage" class="page">
-    <h2>Vault Operations</h2>
-    <div class="cards">
-      <div class="card" onclick="openEncryptModal('message')">
-        <h3>Add encrypted seed phrase</h3>
-        <p>Securely lock your seed phrase or secret message.</p>
+  <section id="vaultPage" class="section">
+    <div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 class="gradient-text">Vault Operations</h2>
+        <div class="link" onclick="logout()">Logout</div>
       </div>
-      <div class="card" onclick="openEncryptModal('file')">
-        <h3>Add encrypted file vault</h3>
-        <p>Upload a file and lock it until you need it.</p>
+      <p style="text-align:center; margin-bottom:1rem;">Select security protocol</p>
+      <div class="system-status"><span style="margin-right:0.5rem; display:inline-block; width:8px; height:8px; background:#00ffbb; border-radius:50%;"></span>System Online</div>
+      <div class="card-grid">
+        <div class="card" onclick="openEncryptModal('seed')">
+          <div class="icon-circle icon-purple">＋</div>
+          <div class="card-title">Add Encrypted Seed Phrase</div>
+          <div class="card-desc">Secure mnemonic phrases with time‑locked encryption</div>
+          <div class="small">AES‑GCM Encryption</div>
+        </div>
+        <div class="card" onclick="openEncryptModal('file')">
+          <div class="icon-circle icon-cyan">🗂️</div>
+          <div class="card-title">Add Encrypted File Vault</div>
+          <div class="card-desc">Store sensitive documents with temporal access control</div>
+          <div class="small">AES‑GCM Encryption</div>
+        </div>
+        <div class="card disabled">
+          <div class="icon-circle icon-orange">🔗</div>
+          <div class="card-title">Lock Crypto Assets</div>
+          <div class="card-desc">Time‑locked cryptocurrency storage and recovery</div>
+          <div class="small">Blockchain Ready</div>
+        </div>
       </div>
-      <div class="card disabled">
-        <h3>Lock crypto assets</h3>
-        <p>Coming soon</p>
+      <div style="margin-top:2rem; border:2px solid #4f5bd7; border-radius:10px; padding:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center;">
+            <span style="font-size:1.2rem; margin-right:0.5rem;">🔓</span><span class="gradient-text" style="font-size:1rem;">Unlock Existing Vault</span>
+          </div>
+          <span class="link" onclick="openDecryptModal()">Initiate Unlock Sequence</span>
+        </div>
       </div>
-      <div class="card" onclick="showDecryptModal()">
-        <h3>Unlock existing vault</h3>
-        <p>Unlock using vault identifier and password.</p>
+      <!-- Vault contents grid -->
+      <div class="vault-contents">
+        <h3 class="gradient-text" style="text-align:left;">Vault Contents</h3>
+        <div id="vaultItems" class="vault-items">
+          <!-- Items will be injected here -->
+        </div>
       </div>
+      <p id="authMessage" style="margin-top:1rem; font-size:0.8rem; color:#00ffbb;">User authenticated</p>
     </div>
-    <button id="logoutBtn" class="secondary" style="margin-bottom:1rem;" onclick="logout()">Log out</button>
-    <h3 style="margin-top:2rem;">Vault Contents</h3>
-    <div id="vaultContents" class="vault-grid"></div>
-  </div>
-  <!-- Encryption modal -->
-  <div id="encryptModal" class="modal">
-    <div class="modal-content">
-      <h3 id="encryptTitle">Encrypt Data</h3>
-      <input type="file" id="fileInput" style="display:none;">
-      <textarea id="messageInput" rows="4" placeholder="Enter seed phrase or message" style="display:none;"></textarea>
-      <input type="password" id="encryptPassword" placeholder="Encryption password">
-      <div style="display:flex; gap:0.5rem; align-items:center;">
-        <label style="flex:1;">Duration
-          <input type="number" id="durationInput" value="5" min="1" class="form-control" style="width:100%;">
-        </label>
-        <label style="flex:1;">Unit
-          <select id="durationUnit" class="form-control">
-            <option value="minutes">Minutes</option>
-            <option value="hours">Hours</option>
-            <option value="days">Days</option>
-          </select>
-        </label>
+  </section>
+  <!-- Encrypt modal overlay -->
+  <div id="encryptOverlay" class="modal-overlay">
+    <div class="modal">
+      <div class="close-btn" onclick="closeEncryptModal()">✖</div>
+      <h3 class="gradient-text" id="encryptTitle">Encrypt Data</h3>
+      <div id="fileInputContainer">
+        <label>Upload File (optional)</label>
+        <input type="file" id="fileInput" />
       </div>
-      <button class="encrypt-btn" onclick="encryptAndStore()">Encrypt & Lock</button>
-      <button class="cancel-btn" onclick="closeEncryptModal()">Cancel</button>
+      <label for="messageInput">Seed Phrase or Message</label>
+      <textarea id="messageInput" placeholder="Enter your seed phrase or secret message..."></textarea>
+      <label for="encryptPassword">Encryption Password</label>
+      <input type="password" id="encryptPassword" placeholder="Strong password for encryption" />
+      <label for="durationInput">Lock Duration</label>
+      <input type="number" id="durationInput" value="30" min="1" />
+      <select id="durationUnit">
+        <option value="minutes">Minutes</option>
+        <option value="hours">Hours</option>
+        <option value="days">Days</option>
+      </select>
+      <div style="background:rgba(255,255,0,0.1); padding:0.5rem; border-radius:6px; font-size:0.75rem; color:#ddbb33; margin-top:1rem;">
+        <p>Encryption occurs entirely in your browser</p>
+        <p>Server never receives your plaintext data or password</p>
+        <p>Random IV generated for each encryption operation</p>
+        <p>Vault can only be unlocked after the specified time expires</p>
+      </div>
+      <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="closeEncryptModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="encryptAndStore()">Encrypt &amp; Lock</button>
+      </div>
     </div>
   </div>
   <!-- Success modal -->
-  <div id="successModal" class="modal">
-    <div class="modal-content">
-      <h3>Vault Created</h3>
-      <p id="vaultIdDisplay"></p>
-      <p id="unlockTimeDisplay"></p>
-      <p id="countdownDisplay" style="font-weight:bold;"></p>
-      <button class="success-btn" onclick="returnToVault()">Return to Vault</button>
+  <div id="successOverlay" class="modal-overlay">
+    <div class="modal">
+      <h3 class="gradient-text">Vault Created</h3>
+      <p>Your vault ID is:</p>
+      <p id="vaultIdDisplay" style="word-break:break-all; font-size:0.85rem; color:#00ffbb; margin-bottom:1rem;"></p>
+      <p id="expiryDisplay"></p>
+      <p id="timeRemainingDisplay" style="color:#ffcc00;"></p>
+      <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="copyVaultId()">Copy ID</button>
+        <button class="btn btn-primary" onclick="returnToVault()">Return to Vault</button>
+      </div>
     </div>
   </div>
   <!-- Decrypt modal -->
-  <div id="decryptModal" class="modal">
-    <div class="modal-content">
-      <h3>Unlock Vault</h3>
-      <input type="text" id="decryptVaultId" placeholder="Vault identifier" class="form-control">
-      <input type="password" id="decryptPassword" placeholder="Encryption password" class="form-control">
-      <button class="encrypt-btn" onclick="decryptData()">Decrypt Data</button>
-      <button class="cancel-btn" onclick="closeDecryptModal()">Cancel</button>
-      <div id="decryptedOutput" style="margin-top:1rem; white-space:pre-wrap;"></div>
+  <div id="decryptOverlay" class="modal-overlay">
+    <div class="modal">
+      <div class="close-btn" onclick="closeDecryptModal()">✖</div>
+      <h3 class="gradient-text">Unlock Vault</h3>
+      <label for="vaultIdInput">Vault Identifier</label>
+      <input id="vaultIdInput" type="text" placeholder="vault_xxx..." />
+      <label for="decryptPassword">Decryption Password</label>
+      <input id="decryptPassword" type="password" placeholder="Enter your encryption password" />
+      <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="closeDecryptModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="decryptData()">Decrypt Data</button>
+      </div>
+      <div id="decryptResult" style="margin-top:1rem; font-size:0.85rem;"></div>
     </div>
   </div>
   <script>
-    // Utility to switch between pages
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
+    // Storage keys: accounts and vaults
+    function showSection(sectionId) {
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(sec => sec.classList.remove('active'));
+      document.getElementById(sectionId).classList.add('active');
     }
-    // Handle dummy external sign up/sign in options
-    function setupAuthButtons() {
-      ['googleSignup','yubiSignup','iiSignup','googleSignin','yubiSignin','iiSignin'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) {
-          btn.onclick = () => alert('This authentication method is not implemented. Please use username/password.');
-        }
-      });
-    }
-    // Create account with username/password and store in localStorage
+    // Create account
     function createAccount() {
       const username = document.getElementById('signupUsername').value.trim();
       const password = document.getElementById('signupPassword').value;
@@ -428,282 +381,281 @@
         alert('Please enter a username and password.');
         return;
       }
-      const users = JSON.parse(localStorage.getItem('users') || '{}');
-      if (users[username]) {
-        alert('Username already exists.');
-        return;
+      const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+      if (accounts[username]) {
+      alert('Username already exists.');
+      return;
       }
-      users[username] = { password };
-      localStorage.setItem('users', JSON.stringify(users));
-      alert('Account created! You can sign in now.');
-      showPage('signinPage');
+      accounts[username] = { password };
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+      alert('Account created! You can now sign in.');
+      showSection('signinPage');
     }
-    // Sign in with username/password
     function signIn() {
       const username = document.getElementById('signinUsername').value.trim();
       const password = document.getElementById('signinPassword').value;
-      const users = JSON.parse(localStorage.getItem('users') || '{}');
-      if (!users[username] || users[username].password !== password) {
-        alert('Invalid credentials.');
+      const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+      if (!accounts[username] || accounts[username].password !== password) {
+        alert('Invalid username or password.');
         return;
       }
-      localStorage.setItem('currentUser', username);
-      showPage('vaultPage');
+      sessionStorage.setItem('currentUser', username);
+      document.getElementById('authMessage').innerText = 'User authenticated as ' + username;
       renderVaultContents();
+      showSection('vaultPage');
     }
-    // Logout current user
     function logout() {
-      localStorage.removeItem('currentUser');
-      showPage('homePage');
+      sessionStorage.removeItem('currentUser');
+      showSection('homePage');
     }
-    // Open encryption modal for message or file
-    let currentEncryptType = 'message';
+    // Modal controls
     function openEncryptModal(type) {
-      currentEncryptType = type;
-      document.getElementById('encryptModal').style.display = 'flex';
-      if (type === 'file') {
-        document.getElementById('fileInput').style.display = 'block';
-        document.getElementById('messageInput').style.display = 'none';
-        document.getElementById('encryptTitle').innerText = 'Encrypt File';
-      } else {
-        document.getElementById('fileInput').style.display = 'none';
-        document.getElementById('messageInput').style.display = 'block';
-        document.getElementById('encryptTitle').innerText = 'Encrypt Seed Phrase / Message';
-      }
+      document.getElementById('encryptOverlay').classList.add('active');
+      document.getElementById('encryptTitle').innerText = type === 'seed' ? 'Encrypt Seed Phrase' : 'Encrypt File Vault';
+      document.getElementById('fileInputContainer').style.display = type === 'file' ? 'block' : 'none';
     }
     function closeEncryptModal() {
-      document.getElementById('encryptModal').style.display = 'none';
+      document.getElementById('encryptOverlay').classList.remove('active');
+      // clear fields
       document.getElementById('fileInput').value = '';
       document.getElementById('messageInput').value = '';
       document.getElementById('encryptPassword').value = '';
-      document.getElementById('durationInput').value = 5;
+      document.getElementById('durationInput').value = '30';
       document.getElementById('durationUnit').value = 'minutes';
     }
-    // Generate a random identifier
-    function generateId() {
-      return 'vault_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    function openDecryptModal() {
+      document.getElementById('decryptOverlay').classList.add('active');
+      document.getElementById('vaultIdInput').value = '';
+      document.getElementById('decryptPassword').value = '';
+      document.getElementById('decryptResult').innerHTML = '';
     }
-    // Helper to derive a key from password using PBKDF2
+    function closeDecryptModal() {
+      document.getElementById('decryptOverlay').classList.remove('active');
+    }
+    // Encryption utility functions using Web Crypto
     async function deriveKey(password, salt) {
       const enc = new TextEncoder();
       const keyMaterial = await window.crypto.subtle.importKey(
         'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
       );
-      return window.crypto.subtle.deriveKey(
-        {
-          name: 'PBKDF2',
-          salt: salt,
-          iterations: 100000,
-          hash: 'SHA-256'
-        },
+      return await window.crypto.subtle.deriveKey(
+        { name:'PBKDF2', salt:salt, iterations:100000, hash:'SHA-256' },
         keyMaterial,
-        { name: 'AES-GCM', length: 256 },
+        { name:'AES-GCM', length:256 },
         false,
-        ['encrypt', 'decrypt']
+        ['encrypt','decrypt']
       );
     }
-    // Encrypt and store data
     async function encryptAndStore() {
+      const message = document.getElementById('messageInput').value;
+      const file = document.getElementById('fileInput').files[0];
       const password = document.getElementById('encryptPassword').value;
-      const duration = parseInt(document.getElementById('durationInput').value, 10);
+      const duration = parseInt(document.getElementById('durationInput').value);
       const unit = document.getElementById('durationUnit').value;
-      if (!password || !duration) {
-        alert('Please enter a password and duration.');
+      if ((!message && !file) || !password || isNaN(duration)) {
+        alert('Please provide message or file, a password and duration.');
         return;
       }
-      let dataBytes;
-      let fileName = '';
-      if (currentEncryptType === 'file') {
-        const file = document.getElementById('fileInput').files[0];
-        if (!file) {
-          alert('Please select a file to encrypt.');
-          return;
-        }
+      let dataBuffer;
+      let fileName = null;
+      if (file) {
+        dataBuffer = await file.arrayBuffer();
         fileName = file.name;
-        const arrayBuffer = await file.arrayBuffer();
-        dataBytes = new Uint8Array(arrayBuffer);
       } else {
-        const message = document.getElementById('messageInput').value;
-        if (!message) {
-          alert('Please enter a message or seed phrase.');
-          return;
-        }
-        const enc = new TextEncoder();
-        dataBytes = enc.encode(message);
+        dataBuffer = new TextEncoder().encode(message);
       }
-      // Determine expiry timestamp
-      const now = Date.now();
-      let expiresInMs = duration * 60000;
-      if (unit === 'hours') expiresInMs = duration * 60 * 60000;
-      if (unit === 'days') expiresInMs = duration * 24 * 60 * 60000;
-      const expiry = now + expiresInMs;
-      // Generate salt and iv
       const salt = window.crypto.getRandomValues(new Uint8Array(16));
       const iv = window.crypto.getRandomValues(new Uint8Array(12));
       const key = await deriveKey(password, salt);
       const cipherBuffer = await window.crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv: iv },
-        key,
-        dataBytes
+        { name:'AES-GCM', iv: iv }, key, dataBuffer
       );
-      // Convert to Base64 for storage
-      const cipherArray = new Uint8Array(cipherBuffer);
-      const cipherBase64 = btoa(String.fromCharCode(...cipherArray));
-      const saltBase64 = btoa(String.fromCharCode(...salt));
-      const ivBase64 = btoa(String.fromCharCode(...iv));
-      const vaultId = generateId();
-      // Determine current user
-      const currentUser = localStorage.getItem('currentUser') || 'guest';
+      const expiry = Date.now() + duration * (unit === 'minutes'?60000 : unit === 'hours'?3600000 : 86400000);
+      // generate ID
+      const id = 'vault_' + Array.from(window.crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,'0')).join('');
       const vaults = JSON.parse(localStorage.getItem('vaults') || '{}');
-      vaults[vaultId] = {
-        type: currentEncryptType,
-        cipher: cipherBase64,
-        salt: saltBase64,
-        iv: ivBase64,
+      vaults[id] = {
+        cipher: Array.from(new Uint8Array(cipherBuffer)).map(b=>b.toString(16).padStart(2,'0')).join(''),
+        iv: Array.from(iv).map(b=>b.toString(16).padStart(2,'0')).join(''),
+        salt: Array.from(salt).map(b=>b.toString(16).padStart(2,'0')).join(''),
         expiry: expiry,
-        filename: fileName,
-        owner: currentUser
+        fileName: fileName,
+        isFile: !!file
       };
       localStorage.setItem('vaults', JSON.stringify(vaults));
-      // Show success modal
       closeEncryptModal();
-      document.getElementById('vaultIdDisplay').innerText = 'Vault ID: ' + vaultId;
-      const unlockDate = new Date(expiry);
-      document.getElementById('unlockTimeDisplay').innerText = 'Unlocks at: ' + unlockDate.toLocaleString();
-      startCountdown(expiry);
-      document.getElementById('successModal').style.display = 'flex';
-      // Re-render contents after creation
+      showSuccess(id, expiry);
       renderVaultContents();
     }
-    function startCountdown(expiry) {
-      function update() {
+    function showSuccess(id, expiry) {
+      document.getElementById('vaultIdDisplay').innerText = id;
+      const expiryDate = new Date(expiry);
+      document.getElementById('expiryDisplay').innerText = 'Unlocks at: ' + expiryDate.toLocaleString();
+      function updateRemaining() {
         const now = Date.now();
-        const diff = expiry - now;
-        if (diff <= 0) {
-          document.getElementById('countdownDisplay').innerText = 'Unlocked now!';
-          clearInterval(timer);
-          return;
+        const remaining = expiry - now;
+        if (remaining <= 0) {
+          document.getElementById('timeRemainingDisplay').innerText = 'Unlocked!';
+          clearInterval(timerInterval);
+        } else {
+          const mins = Math.floor((remaining/60000)%60);
+          const hrs = Math.floor((remaining/3600000)%24);
+          const days = Math.floor(remaining/86400000);
+          document.getElementById('timeRemainingDisplay').innerText = 'Time remaining: ' + (days>0?days+'d ':'') + (hrs>0?hrs+'h ':'') + mins + 'm';
         }
-        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const s = Math.floor((diff % (1000 * 60)) / 1000);
-        let parts = [];
-        if (d) parts.push(d + 'd');
-        if (h) parts.push(h + 'h');
-        if (m) parts.push(m + 'm');
-        parts.push(s + 's');
-        document.getElementById('countdownDisplay').innerText = 'Time remaining: ' + parts.join(' ');
       }
-      update();
-      const timer = setInterval(update, 1000);
+      updateRemaining();
+      const timerInterval = setInterval(updateRemaining, 60000);
+      document.getElementById('successOverlay').classList.add('active');
+    }
+    function copyVaultId() {
+      const id = document.getElementById('vaultIdDisplay').innerText;
+      navigator.clipboard.writeText(id).then(()=>{ alert('Vault ID copied!'); });
     }
     function returnToVault() {
-      document.getElementById('successModal').style.display = 'none';
-      showPage('vaultPage');
-      renderVaultContents();
+      document.getElementById('successOverlay').classList.remove('active');
+      showSection('vaultPage');
     }
-    // Render vault contents grid
-    function renderVaultContents() {
-      const container = document.getElementById('vaultContents');
-      container.innerHTML = '';
-      const vaults = JSON.parse(localStorage.getItem('vaults') || '{}');
-      const now = Date.now();
-      Object.entries(vaults).forEach(([id, v]) => {
-        // Only show items belonging to current user or guest; ignore others
-        const currentUser = localStorage.getItem('currentUser') || 'guest';
-        if (v.owner !== currentUser) return;
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'vault-item';
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'name';
-        nameDiv.textContent = v.type === 'file' ? (v.filename || 'Encrypted File') : 'Encrypted Message';
-        const statusDiv = document.createElement('div');
-        statusDiv.className = 'status';
-        const btn = document.createElement('button');
-        if (now >= v.expiry) {
-          statusDiv.textContent = 'Unlocked';
-          btn.textContent = 'View';
-          btn.className = 'view';
-          btn.onclick = () => {
-            // Pre-fill id and show decrypt modal
-            document.getElementById('decryptVaultId').value = id;
-            document.getElementById('decryptPassword').value = '';
-            document.getElementById('decryptedOutput').textContent = '';
-            document.getElementById('decryptModal').style.display = 'flex';
-          };
-        } else {
-          const diff = v.expiry - now;
-          const m = Math.floor(diff / 60000);
-          const s = Math.floor((diff % 60000) / 1000);
-          statusDiv.textContent = 'Locked: ' + m + 'm ' + s + 's';
-          btn.textContent = 'Locked';
-          btn.className = 'locked';
-        }
-        itemDiv.appendChild(nameDiv);
-        itemDiv.appendChild(statusDiv);
-        itemDiv.appendChild(btn);
-        container.appendChild(itemDiv);
-      });
-    }
-    // Show decrypt modal for manual unlock from operations card
-    function showDecryptModal() {
-      document.getElementById('decryptVaultId').value = '';
-      document.getElementById('decryptPassword').value = '';
-      document.getElementById('decryptedOutput').textContent = '';
-      document.getElementById('decryptModal').style.display = 'flex';
-    }
-    function closeDecryptModal() {
-      document.getElementById('decryptModal').style.display = 'none';
-    }
-    // Decrypt data by id and password
     async function decryptData() {
-      const id = document.getElementById('decryptVaultId').value.trim();
+      const id = document.getElementById('vaultIdInput').value.trim();
       const password = document.getElementById('decryptPassword').value;
       const vaults = JSON.parse(localStorage.getItem('vaults') || '{}');
-      const item = vaults[id];
-      if (!item) {
-        alert('Vault not found');
+      if (!vaults[id]) {
+        alert('Vault not found.');
         return;
       }
-      if (Date.now() < item.expiry) {
-        alert('This vault is still locked!');
+      const entry = vaults[id];
+      if (Date.now() < entry.expiry) {
+        alert('Vault is still locked.');
         return;
       }
-      const salt = Uint8Array.from(atob(item.salt), c => c.charCodeAt(0));
-      const iv = Uint8Array.from(atob(item.iv), c => c.charCodeAt(0));
-      const key = await deriveKey(password, salt);
-      const cipher = Uint8Array.from(atob(item.cipher), c => c.charCodeAt(0));
-      try {
-        const decryptedBuffer = await window.crypto.subtle.decrypt(
-          { name: 'AES-GCM', iv: iv },
-          key,
-          cipher
-        );
-        let outputDiv = document.getElementById('decryptedOutput');
-        if (item.type === 'file') {
-          const blob = new Blob([decryptedBuffer]);
-          const url = URL.createObjectURL(blob);
-          outputDiv.innerHTML = '';
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = item.filename || 'download';
-          link.textContent = 'Download ' + (item.filename || 'file');
-          link.style.color = '#38bdf8';
-          outputDiv.appendChild(link);
-        } else {
-          const dec = new TextDecoder();
-          const message = dec.decode(decryptedBuffer);
-          outputDiv.textContent = message;
+      // decode hex string to bytes
+      function hexToBytes(hex) {
+        const bytes = new Uint8Array(hex.length/2);
+        for (let i=0;i<bytes.length;i++) {
+          bytes[i] = parseInt(hex.substr(i*2,2),16);
         }
+        return bytes;
+      }
+      const iv = hexToBytes(entry.iv);
+      const salt = hexToBytes(entry.salt);
+      const cipherBytes = hexToBytes(entry.cipher);
+      const key = await deriveKey(password, salt);
+      try {
+        const plainBuffer = await window.crypto.subtle.decrypt(
+          { name:'AES-GCM', iv: iv }, key, cipherBytes
+        );
+        let result;
+        if (entry.isFile) {
+          const blob = new Blob([plainBuffer]);
+          const url = URL.createObjectURL(blob);
+          result = '<a href="' + url + '" download="'+ (entry.fileName || 'download') +'">Download file</a>';
+        } else {
+          const decoder = new TextDecoder();
+          result = decoder.decode(plainBuffer);
+        }
+        document.getElementById('decryptResult').innerHTML = '<div style="margin-top:0.5rem;">' + result + '</div>';
+        renderVaultContents();
       } catch (e) {
-        alert('Failed to decrypt. Incorrect password?');
+        alert('Incorrect password or corrupted data.');
       }
     }
-    // Event listeners setup
-    document.getElementById('createAccount').addEventListener('click', createAccount);
-    document.getElementById('login').addEventListener('click', signIn);
-    setupAuthButtons();
+    function renderVaultContents() {
+      const vaults = JSON.parse(localStorage.getItem('vaults') || '{}');
+      const container = document.getElementById('vaultItems');
+      container.innerHTML = '';
+      const entries = Object.entries(vaults);
+      if (entries.length === 0) {
+        container.innerHTML = '<p style="color:#777;">No vaults stored.</p>';
+        return;
+      }
+      entries.forEach(([id, entry]) => {
+        const now = Date.now();
+        const locked = now < entry.expiry;
+        const item = document.createElement('div');
+        item.className = 'vault-item' + (locked ? ' locked' : '');
+        const title = document.createElement('div');
+        title.style.fontWeight = 'bold';
+        title.style.marginBottom = '0.5rem';
+        title.textContent = entry.isFile ? (entry.fileName || 'Encrypted File') : 'Encrypted Message';
+        const idEl = document.createElement('div');
+        idEl.style.fontSize = '0.7rem';
+        idEl.style.wordBreak = 'break-all';
+        idEl.textContent = id;
+        const timerEl = document.createElement('div');
+        timerEl.className = 'timer';
+        function updateTimer() {
+          const remain = entry.expiry - Date.now();
+          if (remain <= 0) {
+            timerEl.textContent = 'Unlocked!';
+          } else {
+            const mins = Math.floor((remain/60000)%60);
+            const hrs = Math.floor((remain/3600000)%24);
+            const days = Math.floor(remain/86400000);
+            timerEl.textContent = 'Unlocks in ' + (days>0?days+'d ':'') + (hrs>0?hrs+'h ':'') + mins + 'm';
+          }
+        }
+        updateTimer();
+        if (locked) {
+          setInterval(updateTimer, 60000);
+        }
+        const button = document.createElement('button');
+        button.className = 'btn btn-primary';
+        button.textContent = locked ? 'Copy ID' : (entry.isFile ? 'Download' : 'View');
+        button.onclick = () => {
+          if (locked) {
+            navigator.clipboard.writeText(id).then(()=>{ alert('ID copied to clipboard'); });
+          } else {
+            // decrypt and display or download
+            const pass = prompt('Enter your password to unlock');
+            if (!pass) return;
+            decryptSpecific(id, pass, entry, item);
+          }
+        };
+        item.appendChild(title);
+        item.appendChild(idEl);
+        item.appendChild(timerEl);
+        item.appendChild(button);
+        container.appendChild(item);
+      });
+    }
+    async function decryptSpecific(id, password, entry, itemDiv) {
+      function hexToBytes(hex) {
+        const bytes = new Uint8Array(hex.length/2);
+        for (let i=0;i<bytes.length;i++) {
+          bytes[i] = parseInt(hex.substr(i*2,2),16);
+        }
+        return bytes;
+      }
+      const iv = hexToBytes(entry.iv);
+      const salt = hexToBytes(entry.salt);
+      const cipherBytes = hexToBytes(entry.cipher);
+      const key = await deriveKey(password, salt);
+      try {
+        const plainBuffer = await window.crypto.subtle.decrypt(
+          { name:'AES-GCM', iv: iv }, key, cipherBytes
+        );
+        if (entry.isFile) {
+          const blob = new Blob([plainBuffer]);
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+        } else {
+          const decoder = new TextDecoder();
+          const text = decoder.decode(plainBuffer);
+          alert('Decrypted message: ' + text);
+        }
+      } catch {
+        alert('Incorrect password.');
+      }
+    }
+    // When page loads, if user session exists, show vault page
+    window.addEventListener('load', () => {
+      if (sessionStorage.getItem('currentUser')) {
+        showSection('vaultPage');
+        document.getElementById('authMessage').innerText = 'User authenticated as ' + sessionStorage.getItem('currentUser');
+        renderVaultContents();
+      }
+    });
   </script>
 </body>
 </html>
