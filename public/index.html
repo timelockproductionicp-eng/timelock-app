@@ -238,9 +238,9 @@
       <div class="link" onclick="showSection('homePage')" style="margin-bottom:1rem;">← Back to Home</div>
       <h2 class="gradient-text">Create Account</h2>
       <p style="text-align:center; font-size:0.7rem; margin-bottom:1rem;">Secure · Encrypted · Time‑locked</p>
-      <button class="btn btn-secondary" onclick="alert('Google signup not available yet');">Sign up with Google</button>
-      <button class="btn btn-secondary" onclick="alert('Yubikey signup not available yet');">Yubikey Authentication</button>
-      <button class="btn btn-secondary" onclick="alert('Internet Identity signup not available yet');">Internet Identity</button>
+      <button class="btn btn-secondary" onclick="signUpWithGoogle()">Sign up with Google</button>
+      <button class="btn btn-secondary" onclick="signUpWithYubikey()">Yubikey Authentication</button>
+      <button class="btn btn-secondary" onclick="signUpWithInternetIdentity()">Internet Identity</button>
       <label for="signupUsername">Username</label>
       <input id="signupUsername" type="text" placeholder="Choose a username" />
       <label for="signupPassword">Create Password</label>
@@ -255,9 +255,9 @@
       <div class="link" onclick="showSection('homePage')" style="margin-bottom:1rem;">← Back to Home</div>
       <h2 class="gradient-text">Sign In</h2>
       <p style="text-align:center; font-size:0.7rem; margin-bottom:1rem;">Secure · Encrypted · Time‑locked</p>
-      <button class="btn btn-secondary" onclick="alert('Google authentication not available yet');">Authenticate with Google</button>
-      <button class="btn btn-secondary" onclick="alert('Yubikey authentication not available yet');">Yubikey Authentication</button>
-      <button class="btn btn-secondary" onclick="alert('Internet Identity authentication not available yet');">Internet Identity</button>
+      <button class="btn btn-secondary" onclick="signInWithGoogle()">Authenticate with Google</button>
+      <button class="btn btn-secondary" onclick="signInWithYubikey()">Yubikey Authentication</button>
+      <button class="btn btn-secondary" onclick="signInWithInternetIdentity()">Internet Identity</button>
       <label for="signinUsername">Username</label>
       <input id="signinUsername" type="text" placeholder="Your username" />
       <label for="signinPassword">Password Authentication</label>
@@ -661,6 +661,83 @@
         alert('Incorrect password.');
       }
     }
+    // Simulated external authentication methods
+    function generateUsername(prefix) {
+      return prefix + '_' + Math.floor(Math.random() * 100000);
+    }
+    function signUpWithGoogle() {
+      let accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+      const username = generateUsername('google');
+      accounts[username] = { password: 'oauth', type: 'google' };
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+      sessionStorage.setItem('currentUser', username);
+      alert('Signed up and logged in with Google as ' + username + '.');
+      showSection('vaultPage');
+    }
+    function signUpWithYubikey() {
+      let accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+      const username = generateUsername('yubikey');
+      accounts[username] = { password: 'yubi', type: 'yubikey' };
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+      sessionStorage.setItem('currentUser', username);
+      alert('Signed up and logged in with Yubikey as ' + username + '.');
+      showSection('vaultPage');
+    }
+    function signUpWithInternetIdentity() {
+      let accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+      const username = generateUsername('internet');
+      accounts[username] = { password: 'ii', type: 'internet' };
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+      sessionStorage.setItem('currentUser', username);
+      alert('Signed up and logged in with Internet Identity as ' + username + '.');
+      showSection('vaultPage');
+    }
+    function signInWithGoogle() {
+      let accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+      const existing = Object.keys(accounts).find(u => accounts[u].type === 'google');
+      let username;
+      if (existing) {
+        username = existing;
+      } else {
+        username = generateUsername('google');
+        accounts[username] = { password: 'oauth', type: 'google' };
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+      }
+      sessionStorage.setItem('currentUser', username);
+      alert('Signed in with Google as ' + username + '.');
+      showSection('vaultPage');
+    }
+    function signInWithYubikey() {
+      let accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+      const existing = Object.keys(accounts).find(u => accounts[u].type === 'yubikey');
+      let username;
+      if (existing) {
+        username = existing;
+      } else {
+        username = generateUsername('yubikey');
+        accounts[username] = { password: 'yubi', type: 'yubikey' };
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+      }
+      sessionStorage.setItem('currentUser', username);
+      alert('Signed in with Yubikey as ' + username + '.');
+      showSection('vaultPage');
+    }
+    function signInWithInternetIdentity() {
+      let accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+      const existing = Object.keys(accounts).find(u => accounts[u].type === 'internet');
+      let username;
+      if (existing) {
+        username = existing;
+      } else {
+        username = generateUsername('internet');
+        accounts[username] = { password: 'ii', type: 'internet' };
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+      }
+      sessionStorage.setItem('currentUser', username);
+      alert('Signed in with Internet Identity as ' + username + '.');
+      showSection('vaultPage');
+    }
+
     // When page loads, if user session exists, show vault page
     window.addEventListener('load', () => {
       if (sessionStorage.getItem('currentUser')) {
