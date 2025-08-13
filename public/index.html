@@ -159,11 +159,16 @@
       flex:1 1 250px;
       border:1px solid #4a4a6a;
       background: rgba(20,27,46,0.9);
-      border-radius:8px;
+      border-radius:10px;
       padding:1rem;
       position:relative;
       display:flex;
       flex-direction:column;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      transition: transform 0.2s;
+    }
+    .vault-item:hover {
+      transform: translateY(-4px);
     }
     .vault-item.locked {
       opacity:0.6;
@@ -174,6 +179,10 @@
     }
     .vault-item button {
       margin-top:auto;
+    }
+    .vault-item .vault-icon {
+      font-size:2rem;
+      margin-bottom:0.5rem;
     }
     .small { font-size:0.75rem; color:#777; }
     /* Link style */
@@ -574,6 +583,10 @@
         const locked = now < entry.expiry;
         const item = document.createElement('div');
         item.className = 'vault-item' + (locked ? ' locked' : '');
+        // icon indicating type
+        const iconEl = document.createElement('div');
+        iconEl.className = 'vault-icon';
+        iconEl.textContent = entry.isFile ? '📁' : '📝';
         const title = document.createElement('div');
         title.style.fontWeight = 'bold';
         title.style.marginBottom = '0.5rem';
@@ -604,14 +617,14 @@
         button.textContent = locked ? 'Copy ID' : (entry.isFile ? 'Download' : 'View');
         button.onclick = () => {
           if (locked) {
-            navigator.clipboard.writeText(id).then(()=>{ alert('ID copied to clipboard'); });
+            navigator.clipboard.writeText(id).then(() => { alert('ID copied to clipboard'); });
           } else {
-            // decrypt and display or download
             const pass = prompt('Enter your password to unlock');
             if (!pass) return;
             decryptSpecific(id, pass, entry, item);
           }
         };
+        item.appendChild(iconEl);
         item.appendChild(title);
         item.appendChild(idEl);
         item.appendChild(timerEl);
